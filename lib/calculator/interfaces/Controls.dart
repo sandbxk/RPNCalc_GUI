@@ -1,49 +1,13 @@
-import 'dart:ffi';
-import 'dart:io';
-
 import '../input_stack.dart';
 import 'Command.dart';
 
-class QuitCommand extends Command<Void> {
+
+class ClearCommand extends Command<InputStack<dynamic>> {
   @override
-  Void execute([Void? a, Void? b]) {
-    exit(0);
-  }
+  InputStack<dynamic> execute(InputStack<dynamic>? stack) {
+    stack!.clear();
 
-  @override
-  String getName() {
-    return "Quit";
-  }
-
-  @override
-  String getSymbol() {
-    return "q";
-  }
-
-  @override
-  String help() {
-    return "q: Quit the program";
-  }
-
-  @override
-  Type getParamType() {
-    return Void;
-  }
-}
-
-class ClearCommand extends Command<InputStack<num>> {
-  @override
-  InputStack<num> execute([InputStack<num>? numberStack, InputStack<num>? historyStack]) {
-    for (int i = 0; i < 5; i++) {
-      print("");
-    }
-
-    numberStack!.clear();
-    historyStack!.clear();
-
-    print("Stack cleared!");
-
-    return numberStack;
+    return stack;
   }
 
   @override
@@ -53,44 +17,12 @@ class ClearCommand extends Command<InputStack<num>> {
 
   @override
   String getSymbol() {
-    return "c";
+    return "C";
   }
 
   @override
   String help() {
     return "c: Clear the stack";
-  }
-
-  @override
-  Type getParamType() {
-    return InputStack<num>;
-  }
-}
-
-class PrintCommand extends Command<InputStack<num>> {
-  @override
-  InputStack<num> execute([InputStack<num>? numberStack, InputStack<num>? historyStack]) {
-    if (numberStack != null)
-      print("Stack: ${numberStack.toString()}");
-    else
-      print("Stack: Empty");
-
-    return numberStack!;
-  }
-
-  @override
-  String getName() {
-    return "Print";
-  }
-
-  @override
-  String getSymbol() {
-    return "p";
-  }
-
-  @override
-  String help() {
-    return "p: Print the stack";
   }
 
   @override

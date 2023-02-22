@@ -1,15 +1,8 @@
+import 'package:rpn_calc_gui/calculator/input_stack.dart';
+
 import 'Command.dart';
 
-class AddCommand implements Command<num> {
-
-
-  @override
-  num execute([num? a, num? b]) {
-    if (a == null || b == null)
-      throw new Exception("Missing arguments for multiplication");
-    return a + b;
-  }
-
+class AddCommand implements Command<InputStack<num>> {
   @override
   String getName() {
     return "Addition";
@@ -30,16 +23,23 @@ class AddCommand implements Command<num> {
     return num;
   }
 
+  @override
+  InputStack<num> execute(InputStack<num> input) {
+    if (!input.isEmpty) {
+      num a = input.pop();
+      num b = input.pop();
+
+      num result = a + b;
+
+      input.push(result);
+    }
+
+    return input;
+  }
 }
 
-class SubCommand implements Command<num> {
+class SubCommand implements Command<InputStack<num>> {
 
-  @override
-  num execute([num? a, num? b]) {
-    if (a == null || b == null)
-      throw new Exception("Missing arguments for multiplication");
-    return a - b;
-  }
 
   @override
   String getName() {
@@ -61,16 +61,22 @@ class SubCommand implements Command<num> {
     return num;
   }
 
+  @override
+  InputStack<num> execute(InputStack<num> input) {
+    if (!input.isEmpty) {
+      num a = input.pop();
+      num b = input.pop();
+
+      num result = a - b;
+
+      input.push(result);
+    }
+
+    return input;
+  }
 }
 
-class MultiplyCommand implements Command<num> {
-  @override
-  num execute([num? a, num? b]) {
-    if (a == null || b == null)
-      throw new Exception("Missing arguments for multiplication");
-    return a * b;
-  }
-
+class MultiplyCommand implements Command<InputStack<num>> {
   @override
   String getName() {
     return "Multiplication";
@@ -91,15 +97,23 @@ class MultiplyCommand implements Command<num> {
     return num;
   }
 
+  @override
+  InputStack<num> execute(InputStack<num> numberStack) {
+    if (!numberStack.isEmpty) {
+      num a = numberStack.pop();
+      num b = numberStack.pop();
+
+      num result = a * b;
+
+      numberStack.push(result);
+    }
+
+    return numberStack;
+  }
 }
 
-class DivCommand implements Command<num> {
-  @override
-  num execute([num? a, num? b]) {
-    if (a == null || b == null)
-      throw new Exception("Missing arguments for multiplication");
-    return a / b;
-  }
+class DivCommand implements Command<InputStack<num>> {
+
 
   @override
   String getName() {
@@ -121,4 +135,17 @@ class DivCommand implements Command<num> {
     return num;
   }
 
+  @override
+  InputStack<num> execute(InputStack<num> input) {
+    if (!input.isEmpty) {
+      num a = input.pop();
+      num b = input.pop();
+
+      num result = a / b;
+
+      input.push(result);
+    }
+
+    return input;
+  }
 }

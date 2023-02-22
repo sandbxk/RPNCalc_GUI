@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rpn_calc_gui/calc_button_widget.dart';
 import 'package:rpn_calc_gui/calculator/interfaces/Command.dart';
 
 import 'calculator/input_stack.dart';
@@ -10,22 +11,27 @@ class CalculatorWidget extends StatefulWidget {
   _CalculatorWidgetState createState() => _CalculatorWidgetState();
 }
 
+//TODO: Make buttons bigger and
+// fix textDisplay along with buttons in text display
+// Make stack display in top left corner with smaller font
+
 class _CalculatorWidgetState extends State<CalculatorWidget> {
   final List<Command> _commands = [
     AddCommand(),
     SubCommand(),
     MultiplyCommand(),
     DivCommand(),
-    QuitCommand(),
-    PrintCommand(),
     ClearCommand(),
     UndoCommand()
   ];
+
+
 
   Command? _currentCommand;
   late InputStack<Command> _inputHistory;
   late InputStack<num> _stack;
 
+  num _currentNumber = 0;
   String _textToDisplay = "0";
 
   _CalculatorWidgetState() {
@@ -43,10 +49,22 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
     return output;
   }
 
-  void addNumber(int number) {
+  void addNumber(num number) {
     setState(() {
-      _stack.push(number);
-      _textToDisplay = _showCurrentStack();
+      if (_currentNumber == 0) {
+        _currentNumber = number;
+      } else {
+        _currentNumber = _currentNumber * 10 + number;
+      }
+      _textToDisplay = _showCurrentStack() + " | " + _currentNumber.toString();
+    });
+  }
+
+  void enter() {
+    setState(() {
+      _stack.push(_currentNumber);
+      _currentNumber = 0;
+      _textToDisplay = _showCurrentStack() + _currentNumber.toString();
     });
   }
 
@@ -54,6 +72,7 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
     setState(() {
       _inputHistory.push(operator);
       _currentCommand = operator;
+      calculate();
       _textToDisplay = _showCurrentStack();
     });
   }
@@ -61,8 +80,7 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
   void calculate() {
     setState(() {
       try {
-        _currentCommand?.execute(_stack, _inputHistory);
-        _textToDisplay = _showCurrentStack();
+        _stack = _currentCommand!.execute(_stack);
       } catch (e) {
         print(e);
       }
@@ -71,8 +89,11 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
 
   void clear() {
     setState(() {
-      _stack.clear();
-      _inputHistory.clear();
+      ClearCommand().execute(_stack);
+      ClearCommand().execute(_inputHistory);
+      _currentCommand = null;
+      _currentNumber = 0;
+
       _textToDisplay = _showCurrentStack();
     });
   }
@@ -84,130 +105,177 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
     });
   }
 
+  Future<void> _help() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Help'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Add: +'),
+                Text('Subtract: -'),
+                Text('Multiply: *'),
+                Text('Divide: /'),
+                Text('Clear: C'),
+                Text('Undo: U'),
+                Text('Enter: ENTER')
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(children: [
-      Expanded(
-        flex: 1,
-        child: Container(
-          color: Colors.black,
-          child: Row(
-            children: [
-              TextButton(onPressed: () => undo(),
-                  child: Text("Undo", style: TextStyle(color: Colors.white),)),
-            Text(
-              _textToDisplay,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 30,
-              ),
-            ),
-          ]
+      appBar: AppBar(
+        title: const Text("RPN Calculator"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help),
+            tooltip: 'Help',
+            onPressed: () => _help(),
           ),
+        ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Container(
+              color: Colors.black,
+              child: Row(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                        onPressed: () => undo(),
+                        icon: const Icon(Icons.undo),
+                        label: Text("")),
+                  ),
+                  Text(
+                    _textToDisplay,
+                    style: const TextStyle(
+                      fontSize: 50,
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                        onPressed: () => clear(),
+                        icon: const Icon(Icons.clear),
+                        label: Text("")
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CalcButton(
+                  text: "1",
+                  onPressed: () => addNumber(1),
+                ),
+                CalcButton(
+                  text: "2",
+                  onPressed: () => addNumber(2),
+                ),
+                CalcButton(
+                  text: "3",
+                  onPressed: () => addNumber(3),
+                ),
+                CalcButton(
+                  text: "+",
+                  onPressed: () => addOperator(AddCommand()),
+                  color: Colors.blue,
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CalcButton(
+                  text: "4",
+                  onPressed: () => addNumber(4),
+                ),
+                CalcButton(
+                  text: "5",
+                  onPressed: () => addNumber(5),
+                ),
+                CalcButton(
+                  text: "6",
+                  onPressed: () => addNumber(6),
+                ),
+                CalcButton(
+                  text: "-",
+                  onPressed: () => addOperator(SubCommand()),
+                  color: Colors.blue,
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CalcButton(
+                  text: "7",
+                  onPressed: () => addNumber(7),
+                ),
+                CalcButton(
+                  text: "8",
+                  onPressed: () => addNumber(8),
+                ),
+                CalcButton(
+                  text: "9",
+                  onPressed: () => addNumber(9),
+                ),
+                CalcButton(
+                  text: "*",
+                  onPressed: () => addOperator(MultiplyCommand()),
+                  color: Colors.blue,
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CalcButton(
+                  text: "C",
+                  onPressed: () => clear(),
+                  color: Colors.blue,
+                ),
+                CalcButton(
+                  text: "0",
+                  onPressed: () => addNumber(0),
+                ),
+                CalcButton(
+                  text: "ENTER",
+                  onPressed: () => enter(),
+                  color: Colors.blue,
+                ),
+                CalcButton(
+                  text: "/",
+                  onPressed: () => addOperator(DivCommand()),
+                  color: Colors.blue,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-      Expanded(
-        flex: 2,
-        child: Container(
-          color: Colors.white,
-          child: Column(children: [
-            Expanded(
-              flex: 1,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(7),
-                      child: Text("7"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(8),
-                      child: Text("8"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(9),
-                      child: Text("9"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addOperator(DivCommand()),
-                      child: Text("/"),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(4),
-                      child: Text("4"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(5),
-                      child: Text("5"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(6),
-                      child: Text("6"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addOperator(MultiplyCommand()),
-                      child: Text("*"),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(1),
-                      child: Text("1"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(2),
-                      child: Text("2"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addNumber(3),
-                      child: Text("3"),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => addOperator(SubCommand()),
-                      child: Text("-"),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ]),
-        ),
-      ),
-    ]));
+    );
   }
 }

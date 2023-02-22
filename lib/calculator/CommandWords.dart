@@ -1,4 +1,4 @@
-import 'dart:ffi';
+/*import 'dart:ffi';
 
 import 'input_stack.dart';
 import 'interfaces/Command.dart';
@@ -11,8 +11,6 @@ class CommandWords {
     SubCommand(),
     MultiplyCommand(),
     DivCommand(),
-    QuitCommand(),
-    PrintCommand(),
     ClearCommand(),
     UndoCommand()
   ];
@@ -100,4 +98,6 @@ class CommandWords {
       return "Error: $e";
     }
   }
+
 }
+ */

@@ -16,7 +16,7 @@ class InputStack<E> {
   String toString() {
     String result = "";
     for (E item in _stack) {
-      result +=  " [$item] ";
+      result +=  "$item, ";
     }
     return result;
   }
