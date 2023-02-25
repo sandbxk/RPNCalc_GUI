@@ -1,29 +1,27 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rpn_calc_gui/calc_button_widget.dart';
 import 'package:rpn_calc_gui/calculator/interfaces/Command.dart';
+import 'package:rpn_calc_gui/custom_icons_icons.dart';
 
 import 'calculator/input_stack.dart';
 import 'calculator/interfaces/Operations.dart';
 import 'calculator/interfaces/Controls.dart';
 
 class CalculatorWidget extends StatefulWidget {
+  const CalculatorWidget({super.key});
+
   @override
-  _CalculatorWidgetState createState() => _CalculatorWidgetState();
+  CalculatorWidgetState createState() => CalculatorWidgetState();
 }
 
 //TODO: Add Icon support for buttons
 
-class _CalculatorWidgetState extends State<CalculatorWidget> {
-  final List<Command> _commands = [
-    AddCommand(),
-    SubCommand(),
-    MultiplyCommand(),
-    DivCommand(),
-    ClearCommand(),
-    UndoCommand()
-  ];
+class CalculatorWidgetState extends State<CalculatorWidget> {
 
   final String helpExplanation = "Reverse Polish notation (RPN) is a method for conveying mathematical expressions without the use of separators such as brackets and parentheses. In this notation, the operators follow their operands, hence removing the need for brackets to define evaluation priority. The operation is read from left to right but execution is done every time an operator is reached, and always using the last two numbers as the operands. This notation is suited for computers and calculators since there are fewer characters to track and fewer operations to execute. Reverse Polish notation is also known as postfix notation.";
+
+
   Command? _currentCommand;
   late InputStack<num> _inputHistory;
   late InputStack<num> _stack;
@@ -31,9 +29,9 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
   num _currentNumber = 0;
   String _textToDisplay = "0 ?";
 
-  _CalculatorWidgetState() {
-    _inputHistory = new InputStack();
-    _stack = new InputStack();
+  CalculatorWidgetState() {
+    _inputHistory = InputStack();
+    _stack = InputStack();
   }
 
   String get currentOperator {
@@ -77,7 +75,9 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
       try {
         _stack = _currentCommand!.execute(_stack);
       } catch (e) {
-        print(e);
+        if (kDebugMode) {
+          print(e);
+        }
       }
     });
   }
@@ -170,7 +170,7 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
                         child: TextButton.icon(
                             onPressed: () => clear(),
                             icon: const Icon(Icons.clear_all),
-                            label: Text("")),
+                            label: const Text("Clear")),
                       ),
                       Align(
                         alignment: Alignment.topLeft,
@@ -211,9 +211,12 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
                   onPressed: () => addNumber(3),
                 ),
                 CalcButton(
-                  text: "+",
+                  icon: Icons.add,
                   onPressed: () => addOperator(AddCommand()),
-                  color: Colors.lightBlue,
+                  color: Colors.blue,
+                  size: 30,
+                  text: '',
+                  weight: 1000,
                 ),
               ],
             ),
@@ -233,9 +236,10 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
                   onPressed: () => addNumber(6),
                 ),
                 CalcButton(
-                  text: "-",
+                  text: "",
+                  icon: CustomIcons.minus,
                   onPressed: () => addOperator(SubCommand()),
-                  color: Colors.lightBlue,
+                  color: Colors.blue,
                 ),
               ],
             ),
@@ -255,9 +259,10 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
                   onPressed: () => addNumber(9),
                 ),
                 CalcButton(
-                  text: "*",
+                  text: "",
+                  icon: CustomIcons.multiply,
                   onPressed: () => addOperator(MultiplyCommand()),
-                  color: Colors.lightBlue,
+                  color: Colors.blue,
                 ),
               ],
             ),
@@ -265,23 +270,28 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CalcButton(
-                  text: "U",
+                  text: "",
+                  icon: Icons.undo,
                   onPressed: () => clear(),
-                  color: Colors.blue,
+                  color: Colors.blueGrey,
+                  size: 30,
                 ),
                 CalcButton(
                   text: "0",
                   onPressed: () => addNumber(0),
                 ),
                 CalcButton(
-                  text: "ENTER",
+                  text: "",
+                  icon: Icons.arrow_right_alt,
                   onPressed: () => enter(),
-                  color: Colors.blue,
+                  color: Colors.blueGrey,
+                  size: 30,
                 ),
                 CalcButton(
-                  text: "/",
+                  text: "",
+                  icon: CustomIcons.divide,
                   onPressed: () => addOperator(DivCommand()),
-                  color: Colors.lightBlue,
+                  color: Colors.blue,
                 ),
               ],
             ),
