@@ -11,9 +11,7 @@ class CalculatorWidget extends StatefulWidget {
   _CalculatorWidgetState createState() => _CalculatorWidgetState();
 }
 
-//TODO: Make buttons bigger and
-// fix textDisplay along with buttons in text display
-// Make stack display in top left corner with smaller font
+//TODO: Add Icon support for buttons
 
 class _CalculatorWidgetState extends State<CalculatorWidget> {
   final List<Command> _commands = [
@@ -25,28 +23,25 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
     UndoCommand()
   ];
 
-
-
+  final String helpExplanation = "Reverse Polish notation (RPN) is a method for conveying mathematical expressions without the use of separators such as brackets and parentheses. In this notation, the operators follow their operands, hence removing the need for brackets to define evaluation priority. The operation is read from left to right but execution is done every time an operator is reached, and always using the last two numbers as the operands. This notation is suited for computers and calculators since there are fewer characters to track and fewer operations to execute. Reverse Polish notation is also known as postfix notation.";
   Command? _currentCommand;
-  late InputStack<Command> _inputHistory;
+  late InputStack<num> _inputHistory;
   late InputStack<num> _stack;
 
   num _currentNumber = 0;
-  String _textToDisplay = "0";
+  String _textToDisplay = "0 ?";
 
   _CalculatorWidgetState() {
     _inputHistory = new InputStack();
     _stack = new InputStack();
   }
 
-  String _showCurrentStack() {
-    String stack = this._stack.toString();
-
-    String currentCommand = _currentCommand?.getSymbol() ?? "?";
-
-    String output = stack.padLeft(5) + currentCommand.padRight(5);
-
-    return output;
+  String get currentOperator {
+    if (_currentCommand == null) {
+      return "?";
+    } else {
+      return _currentCommand!.getSymbol();
+    }
   }
 
   void addNumber(num number) {
@@ -56,24 +51,24 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
       } else {
         _currentNumber = _currentNumber * 10 + number;
       }
-      _textToDisplay = _showCurrentStack() + " | " + _currentNumber.toString();
+      _textToDisplay = "$_currentNumber $currentOperator";
     });
   }
 
   void enter() {
     setState(() {
       _stack.push(_currentNumber);
+      _inputHistory.push(_currentNumber);
       _currentNumber = 0;
-      _textToDisplay = _showCurrentStack() + _currentNumber.toString();
+      _textToDisplay = "$_currentNumber $currentOperator";
     });
   }
 
   void addOperator(Command operator) {
     setState(() {
-      _inputHistory.push(operator);
       _currentCommand = operator;
       calculate();
-      _textToDisplay = _showCurrentStack();
+      _textToDisplay = "$_currentNumber $currentOperator";
     });
   }
 
@@ -94,14 +89,15 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
       _currentCommand = null;
       _currentNumber = 0;
 
-      _textToDisplay = _showCurrentStack();
+      _textToDisplay = "0 $currentOperator";
     });
   }
 
   void undo() {
     setState(() {
+      _stack = UndoCommand().execute(_stack, _inputHistory);
       _stack.pop();
-      _textToDisplay = _showCurrentStack();
+      _textToDisplay = "0 $currentOperator";
     });
   }
 
@@ -113,15 +109,23 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
         return AlertDialog(
           title: const Text('Help'),
           content: SingleChildScrollView(
-            child: ListBody(
-              children: const <Widget>[
-                Text('Add: +'),
-                Text('Subtract: -'),
-                Text('Multiply: *'),
-                Text('Divide: /'),
-                Text('Clear: C'),
-                Text('Undo: U'),
-                Text('Enter: ENTER')
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(helpExplanation),
+                ),
+                ListBody(
+                  children: const <Widget>[
+                    Text('Add: +'),
+                    Text('Subtract: -'),
+                    Text('Multiply: *'),
+                    Text('Divide: /'),
+                    Text('Clear: C'),
+                    Text('Undo: U'),
+                    Text('Enter: ENTER')
+                  ],
+                ),
               ],
             ),
           ),
@@ -157,34 +161,42 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
           children: [
             Container(
               color: Colors.black,
-              child: Row(
+              child: Column(
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                        onPressed: () => undo(),
-                        icon: const Icon(Icons.undo),
-                        label: Text("")),
-                  ),
-                  Text(
-                    _textToDisplay,
-                    style: const TextStyle(
-                      fontSize: 50,
-                    ),
+                  Row(
+                    children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: TextButton.icon(
+                            onPressed: () => clear(),
+                            icon: const Icon(Icons.clear_all),
+                            label: Text("")),
+                      ),
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          _stack.toString(),
+                          style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w100),
+                        ),
+                      ),
+                    ],
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: TextButton.icon(
-                        onPressed: () => clear(),
-                        icon: const Icon(Icons.clear),
-                        label: Text("")
+                    child: Text(
+                      _textToDisplay,
+                      style: const TextStyle(
+                          fontSize: 50, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CalcButton(
                   text: "1",
@@ -201,12 +213,12 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
                 CalcButton(
                   text: "+",
                   onPressed: () => addOperator(AddCommand()),
-                  color: Colors.blue,
+                  color: Colors.lightBlue,
                 ),
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CalcButton(
                   text: "4",
@@ -223,12 +235,12 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
                 CalcButton(
                   text: "-",
                   onPressed: () => addOperator(SubCommand()),
-                  color: Colors.blue,
+                  color: Colors.lightBlue,
                 ),
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CalcButton(
                   text: "7",
@@ -245,15 +257,15 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
                 CalcButton(
                   text: "*",
                   onPressed: () => addOperator(MultiplyCommand()),
-                  color: Colors.blue,
+                  color: Colors.lightBlue,
                 ),
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CalcButton(
-                  text: "C",
+                  text: "U",
                   onPressed: () => clear(),
                   color: Colors.blue,
                 ),
@@ -269,7 +281,7 @@ class _CalculatorWidgetState extends State<CalculatorWidget> {
                 CalcButton(
                   text: "/",
                   onPressed: () => addOperator(DivCommand()),
-                  color: Colors.blue,
+                  color: Colors.lightBlue,
                 ),
               ],
             ),
