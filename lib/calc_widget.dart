@@ -18,9 +18,8 @@ class CalculatorWidget extends StatefulWidget {
 //TODO: Add Icon support for buttons
 
 class CalculatorWidgetState extends State<CalculatorWidget> {
-
-  final String helpExplanation = "Reverse Polish notation (RPN) is a method for conveying mathematical expressions without the use of separators such as brackets and parentheses. In this notation, the operators follow their operands, hence removing the need for brackets to define evaluation priority. The operation is read from left to right but execution is done every time an operator is reached, and always using the last two numbers as the operands. This notation is suited for computers and calculators since there are fewer characters to track and fewer operations to execute. Reverse Polish notation is also known as postfix notation.";
-
+  final String helpExplanation =
+      "Reverse Polish notation (RPN) is a method for conveying mathematical expressions without the use of separators such as brackets and parentheses. In this notation, the operators follow their operands, hence removing the need for brackets to define evaluation priority. The operation is read from left to right but execution is done every time an operator is reached, and always using the last two numbers as the operands. This notation is suited for computers and calculators since there are fewer characters to track and fewer operations to execute. Reverse Polish notation is also known as postfix notation.";
 
   Command? _currentCommand;
   late InputStack<num> _inputHistory;
@@ -163,33 +162,38 @@ class CalculatorWidgetState extends State<CalculatorWidget> {
               color: Colors.black,
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: TextButton.icon(
-                            onPressed: () => clear(),
-                            icon: const Icon(Icons.clear_all),
-                            label: const Text("Clear")),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          TextButton.icon(
+                              onPressed: () => clear(),
+                              icon: const Icon(Icons.clear_all),
+                              label: const Text("Clear")),
+                          Text(
+                            _stack.toString(),
+                            overflow: TextOverflow.fade,
+                            style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w200),
+                          ),
+                        ],
                       ),
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          _stack.toString(),
-                          style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w100),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Text(
-                      _textToDisplay,
-                      style: const TextStyle(
-                          fontSize: 50, fontWeight: FontWeight.bold),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        _textToDisplay,
+                        overflow: TextOverflow.fade,
+                        style: const TextStyle(
+                            fontSize: 50, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],

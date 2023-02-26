@@ -141,7 +141,7 @@ class DivCommand implements Command<InputStack<num>> {
       num a = input.pop();
       num b = input.pop();
 
-      num result = a / b;
+      num result = b / a;
 
       input.push(result);
     }
