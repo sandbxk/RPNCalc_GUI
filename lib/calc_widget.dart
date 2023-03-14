@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rpn_calc_gui/calc_button_widget.dart';
 import 'package:rpn_calc_gui/calculator/interfaces/Command.dart';
 import 'package:rpn_calc_gui/custom_icons_icons.dart';
 
+import 'calc_model.dart';
 import 'calculator/input_stack.dart';
 import 'calculator/interfaces/Operations.dart';
 import 'calculator/interfaces/Controls.dart';
@@ -18,87 +20,10 @@ class CalculatorWidget extends StatefulWidget {
 //TODO: Add Icon support for buttons
 
 class CalculatorWidgetState extends State<CalculatorWidget> {
+
   final String helpExplanation =
       "Reverse Polish notation (RPN) is a method for conveying mathematical expressions without the use of separators such as brackets and parentheses. In this notation, the operators follow their operands, hence removing the need for brackets to define evaluation priority. The operation is read from left to right but execution is done every time an operator is reached, and always using the last two numbers as the operands. This notation is suited for computers and calculators since there are fewer characters to track and fewer operations to execute. Reverse Polish notation is also known as postfix notation.";
 
-  Command? _currentCommand;
-  late InputStack<num> _inputHistory;
-  late InputStack<num> _stack;
-
-  num _currentNumber = 0;
-  String _textToDisplay = "0 ?";
-
-  CalculatorWidgetState() {
-    _inputHistory = InputStack();
-    _stack = InputStack();
-  }
-
-  String get currentOperator {
-    if (_currentCommand == null) {
-      return "?";
-    } else {
-      return _currentCommand!.getSymbol();
-    }
-  }
-
-  void addNumber(num number) {
-    setState(() {
-      if (_currentNumber == 0) {
-        _currentNumber = number;
-      } else {
-        _currentNumber = _currentNumber * 10 + number;
-      }
-      _textToDisplay = "$_currentNumber $currentOperator";
-    });
-  }
-
-  void enter() {
-    setState(() {
-      _stack.push(_currentNumber);
-      _inputHistory.push(_currentNumber);
-      _currentNumber = 0;
-      _textToDisplay = "$_currentNumber $currentOperator";
-    });
-  }
-
-  void addOperator(Command operator) {
-    setState(() {
-      _currentCommand = operator;
-      calculate();
-      _textToDisplay = "$_currentNumber $currentOperator";
-    });
-  }
-
-  void calculate() {
-    setState(() {
-      try {
-        _stack = _currentCommand!.execute(_stack);
-      } catch (e) {
-        if (kDebugMode) {
-          print(e);
-        }
-      }
-    });
-  }
-
-  void clear() {
-    setState(() {
-      ClearCommand().execute(_stack);
-      ClearCommand().execute(_inputHistory);
-      _currentCommand = null;
-      _currentNumber = 0;
-
-      _textToDisplay = "0 $currentOperator";
-    });
-  }
-
-  void undo() {
-    setState(() {
-      _stack = UndoCommand().execute(_stack, _inputHistory);
-      _stack.pop();
-      _textToDisplay = "0 $currentOperator";
-    });
-  }
 
   Future<void> _help() async {
     return showDialog<void>(
@@ -143,6 +68,7 @@ class CalculatorWidgetState extends State<CalculatorWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<CalcModel>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("RPN Calculator"),
@@ -169,11 +95,11 @@ class CalculatorWidgetState extends State<CalculatorWidget> {
                       child: Row(
                         children: [
                           TextButton.icon(
-                              onPressed: () => clear(),
+                              onPressed: () => provider.clear(),
                               icon: const Icon(Icons.clear_all),
                               label: const Text("Clear")),
                           Text(
-                            _stack.toString(),
+                            provider.stack.toString(),
                             overflow: TextOverflow.fade,
                             style: const TextStyle(
                                 color: Colors.grey,
@@ -189,7 +115,7 @@ class CalculatorWidgetState extends State<CalculatorWidget> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        _textToDisplay,
+                        provider.textToDisplay,
                         overflow: TextOverflow.fade,
                         style: const TextStyle(
                             fontSize: 50, fontWeight: FontWeight.bold),
@@ -204,19 +130,19 @@ class CalculatorWidgetState extends State<CalculatorWidget> {
               children: [
                 CalcButton(
                   text: "1",
-                  onPressed: () => addNumber(1),
+                  onPressed: () => provider.addNumber(1),
                 ),
                 CalcButton(
                   text: "2",
-                  onPressed: () => addNumber(2),
+                  onPressed: () => provider.addNumber(2),
                 ),
                 CalcButton(
                   text: "3",
-                  onPressed: () => addNumber(3),
+                  onPressed: () => provider.addNumber(3),
                 ),
                 CalcButton(
                   icon: Icons.add,
-                  onPressed: () => addOperator(AddCommand()),
+                  onPressed: () => provider.addOperator(AddCommand()),
                   color: Colors.blue,
                   size: 30,
                   text: '',
@@ -229,20 +155,20 @@ class CalculatorWidgetState extends State<CalculatorWidget> {
               children: [
                 CalcButton(
                   text: "4",
-                  onPressed: () => addNumber(4),
+                  onPressed: () => provider.addNumber(4),
                 ),
                 CalcButton(
                   text: "5",
-                  onPressed: () => addNumber(5),
+                  onPressed: () => provider.addNumber(5),
                 ),
                 CalcButton(
                   text: "6",
-                  onPressed: () => addNumber(6),
+                  onPressed: () => provider.addNumber(6),
                 ),
                 CalcButton(
                   text: "",
                   icon: CustomIcons.minus,
-                  onPressed: () => addOperator(SubCommand()),
+                  onPressed: () => provider.addOperator(SubCommand()),
                   color: Colors.blue,
                 ),
               ],
@@ -252,20 +178,20 @@ class CalculatorWidgetState extends State<CalculatorWidget> {
               children: [
                 CalcButton(
                   text: "7",
-                  onPressed: () => addNumber(7),
+                  onPressed: () => provider.addNumber(7),
                 ),
                 CalcButton(
                   text: "8",
-                  onPressed: () => addNumber(8),
+                  onPressed: () => provider.addNumber(8),
                 ),
                 CalcButton(
                   text: "9",
-                  onPressed: () => addNumber(9),
+                  onPressed: () => provider.addNumber(9),
                 ),
                 CalcButton(
                   text: "",
                   icon: CustomIcons.multiply,
-                  onPressed: () => addOperator(MultiplyCommand()),
+                  onPressed: () => provider.addOperator(MultiplyCommand()),
                   color: Colors.blue,
                 ),
               ],
@@ -276,25 +202,25 @@ class CalculatorWidgetState extends State<CalculatorWidget> {
                 CalcButton(
                   text: "",
                   icon: Icons.undo,
-                  onPressed: () => clear(),
+                  onPressed: () => provider.clear(),
                   color: Colors.blueGrey,
                   size: 30,
                 ),
                 CalcButton(
                   text: "0",
-                  onPressed: () => addNumber(0),
+                  onPressed: () => provider.addNumber(0),
                 ),
                 CalcButton(
                   text: "",
                   icon: Icons.arrow_right_alt,
-                  onPressed: () => enter(),
+                  onPressed: () => provider.enter(),
                   color: Colors.blueGrey,
                   size: 30,
                 ),
                 CalcButton(
                   text: "",
                   icon: CustomIcons.divide,
-                  onPressed: () => addOperator(DivCommand()),
+                  onPressed: () => provider.addOperator(DivCommand()),
                   color: Colors.blue,
                 ),
               ],
